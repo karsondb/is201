@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pong Game</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #000;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .game-area {
+      position: relative;
+    }
+    canvas {
+      border: 2px solid #fff;
+      background-color: #228B22; /* Green background like grass */
+    }
+    .score {
+      color: #fff;
+      font-size: 36px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px #000;
+      margin-bottom: 20px;
+    }
+    .score.blue {
+      color: navy;
+    }
+    .score.red {
+      color: red;
+    }
+    .message {
+      color: #fff;
+      font-size: 48px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px #000;
+      margin-top: 20px;
+    }
+    .rules {
+      position: absolute;
+      top: 20px;
+      left: 20px; /* Position the rules box in the top left corner */
+      width: 240px; /* Slightly larger width */
+      padding: 10px;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      font-size: 14px; /* Slightly larger font size */
+      text-align: left;
+      border: 2px solid #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="score" id="scoreboard">
+    <span id="playerScore" class="blue">BYU: 0</span> | <span id="computerScore" class="red">Utah: 0</span>
+  </div>
+  <div class="container">
+    <div class="rules">
+      <h3>Rules:</h3>
+      <p>1. First one to 5 points wins.</p>
+      <p>2. A second ball will appear after 30 seconds if no one has scored.</p>
+      <p>3. Press 'P' to pause the game.</p>
+    </div>
+    <div class="game-area">
+      <canvas id="pong" width="1000" height="500"></canvas> <!-- Reduced size -->
+    </div>
+  </div>
+  <div class="message" id="message"></div>
+  <script>
+    const canvas = document.getElementById('pong');
+    const context = canvas.getContext('2d');
+
+    const paddleWidth = 10, paddleHeight = 100, ballRadius = 10;
+    let upArrowPressed = false, downArrowPressed = false;
+    let playerScore = 0, computerScore = 0;
+    let isPaused = false;
+    let balls = [];
+    let lastScoreTime = Date.now();
+
+    const player = {
+      x: 0,
+      y: canvas.height / 2 - paddleHeight / 2,
+      width: paddleWidth,
+      height: paddleHeight,
+      color: 'navy', // User paddle color
+      dy: 5
+    };
+
+    const computer = {
+      x: canvas.width - paddleWidth,
+      y: canvas.height / 2 - paddleHeight / 2,
+      width: paddleWidth,
+      height: paddleHeight,
+      color: 'red', // Computer paddle color
+      dy: 5
+    };
+
+    function createBall() {
+      return {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        radius: ballRadius,
+        speed: 5, // Increased speed
+        dx: 5 * (Math.random() > 0.5 ? 1 : -1),
+        dy: 5 * (Math.random() > 0.5 ? 1 : -1),
+        color: '#8B4513' // Brown color like a football
+      };
+    }
+
+    balls.push(createBall());
+
+    function drawRect(x, y, w, h, color) {
+      context.fillStyle = color;
+      context.fillRect(x, y, w, h);
+    }
+
+    function drawArc(x, y, r, color) {
+      context.fillStyle = color;
+      context.beginPath();
+      context.arc(x, y, r, 0, Math.PI * 2, false);
+      context.closePath();
+      context.fill();
+    }
+
+    function movePaddle() {
+      if (upArrowPressed && player.y > 0) {
+        player.y -= player.dy;
+      } else if (downArrowPressed && player.y < canvas.height - player.height) {
+        player.y += player.dy;
+      }
+    }
+
+    function moveBall(ball) {
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+
+      if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+        ball.dy *= -1;
+      }
+
+      let playerPaddle = (ball.x < canvas.width / 2) ? player : computer;
+
+      if (collisionDetect(ball, playerPaddle)) {
+        let collidePoint = (ball.y - (playerPaddle.y + playerPaddle.height / 2));
+        collidePoint = collidePoint / (playerPaddle.height / 2);
+        let angleRad = (Math.PI / 4) * collidePoint;
+        let direction = (ball.x < canvas.width / 2) ? 1 : -1;
+        ball.dx = direction * ball.speed * Math.cos(angleRad);
+        ball.dy = ball.speed * Math.sin(angleRad);
+        ball.speed += 0.5;
+      }
+
+      if (ball.x + ball.radius > canvas.width) {
+        playerScore++;
+        document.getElementById('playerScore').innerText = `BYU: ${playerScore}`;
+        updateScoreboard('blue');
+        resetBalls();
+        lastScoreTime = Date.now();
+        checkWin();
+      } else if (ball.x - ball.radius < 0) {
+        computerScore++;
+        document.getElementById('computerScore').innerText = `Utah: ${computerScore}`;
+        updateScoreboard('red');
+        resetBalls();
+        lastScoreTime = Date.now();
+        checkWin();
+      }
+    }
+
+    function collisionDetect(ball, paddle) {
+      return ball.x - ball.radius < paddle.x + paddle.width &&
+             ball.x + ball.radius > paddle.x &&
+             ball.y < paddle.y + paddle.height &&
+             ball.y + ball.radius > paddle.y;
+    }
+
+    function resetBalls() {
+      balls = [createBall()];
+    }
+
+    function moveComputerPaddle() {
+      let closestBall = balls.reduce((closest, ball) => {
+        let closestDistance = Math.abs(closest.x - computer.x);
+        let ballDistance = Math.abs(ball.x - computer.x);
+        return ballDistance < closestDistance ? ball : closest;
+      }, balls[0]);
+
+      if (computer.y < closestBall.y - computer.height / 2) {
+        computer.y += computer.dy * (Math.random() * 0.5 + 0.5);
+      } else if (computer.y > closestBall.y - computer.height / 2) {
+        computer.y -= computer.dy * (Math.random() * 0.5 + 0.5);
+      }
+    }
+
+    function updateScoreboard(color) {
+      const scoreboard = document.getElementById('scoreboard');
+      scoreboard.classList.remove('blue', 'red');
+      scoreboard.classList.add(color);
+      setTimeout(() => {
+        scoreboard.classList.remove(color);
+      }, 500);
+    }
+
+    function checkWin() {
+      const message = document.getElementById('message');
+      if (playerScore >= 5) {
+        message.innerText = 'Cougars Win!';
+        isPaused = true;
+        setTimeout(resetGame, 3000);
+      } else if (computerScore >= 5) {
+        message.innerText = 'Utes Win!';
+        isPaused = true;
+        setTimeout(resetGame, 3000);
+      }
+    }
+
+    function resetGame() {
+      playerScore = 0;
+      computerScore = 0;
+      document.getElementById('playerScore').innerText = `BYU: ${playerScore}`;
+      document.getElementById('computerScore').innerText = `Utah: ${computerScore}`;
+      document.getElementById('message').innerText = '';
+      isPaused = false;
+      resetBalls();
+      lastScoreTime = Date.now();
+    }
+
+    function update() {
+      if (!isPaused) {
+        movePaddle();
+        balls.forEach(moveBall);
+        moveComputerPaddle();
+
+        if (Date.now() - lastScoreTime > 30000 && balls.length < 2) {
+          balls.push(createBall());
+        }
+      }
+    }
+
+    function render() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      drawRect(0, 0, canvas.width, canvas.height, '#228B22'); // Green background like grass
+      drawRect(player.x, player.y, player.width, player.height, player.color);
+      drawRect(computer.x, computer.y, computer.width, computer.height, computer.color);
+      balls.forEach(ball => drawArc(ball.x, ball.y, ball.radius, ball.color));
+    }
+
+    function gameLoop() {
+      update();
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener('keydown', (event) => {
+      switch (event.keyCode) {
+        case 38:
+          upArrowPressed = true;
+          break;
+        case 40:
+          downArrowPressed = true;
+          break;
+        case 80: // 'P' key
+          isPaused = !isPaused;
+          break;
+      }
+    });
+
+    document.addEventListener('keyup', (event) => {
+      switch (event.keyCode) {
+        case 38:
+          upArrowPressed = false;
+          break;
+        case 40:
+          downArrowPressed = false;
+          break;
+      }
+    });
+
+    gameLoop();
+  </script>
+</body>
+</html>

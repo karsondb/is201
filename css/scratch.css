@@ -1,0 +1,122 @@
+.header {
+    top: 10px;
+    left: 8px;
+    right: 8px;
+    height: 100px;
+    padding: 25px;
+    border-bottom: solid 2px gray;
+    position: absolute;
+    z-index: 1;
+    background-color: black
+}
+
+.title {
+    font-size: 48px; 
+    font-weight: bold;
+    color: white; 
+    font-family: 'Times New Roman', Times, serif;
+    text-align: center;
+}
+
+.sectiontitle {
+    font-size: 30px;
+    font-weight: bold;
+    color: white; 
+    font-family: 'Times New Roman', Times, serif;
+    text-align: center;
+    border: 5px solid gray;
+    z-index: 3;
+    margin-top: 0;
+}
+
+.rightalign {
+    float: right;
+    position: relative;
+    padding: 5px;
+    z-index: 2;
+}
+
+a {
+    color: white;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 160px; 
+    left: 15px;
+    right: 15px;
+  }
+  .leftmenu, .rightmenu {
+    flex: 1;
+    border-bottom: 1px solid black;
+    height: 424px; 
+  }
+
+  .leftmenu {
+    background-color: #f0f0f0;
+    background-image: url('https://fadeawayworld.net/.image/t_share/MTk1NzQwMzE1Njc0NDg2NzIx/received_950311326332694.webp');
+    background-size: contain;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    
+  }
+
+  .rightmenu {
+    background-color: black; 
+    position: relative;
+    z-index: 2;
+  }
+
+  .pstyle { 
+    font-size: 21px;
+    color: white; 
+    font-family: 'Times New Roman', Times, serif;
+    text-align: left;
+    z-index: 5;
+    padding: 10px;
+  }
+
+  .olstyle {
+    font-size: 21px;
+    color: white; 
+    font-family: 'Times New Roman', Times, serif;
+    text-align: left;
+    z-index: 5;
+    padding-left: 30px;
+  }
+
+  .ulstyle {
+    font-size: 18px;
+    color: white; 
+    font-family: 'Times New Roman', Times, serif;
+    text-align: left;
+    z-index: 5;
+    padding-left: 30px;
+  }
+
+  .content {
+    flex: 1;
+  }
+
+  .footer {
+    left: 8px;
+    right: 11px;
+    height: 400px;
+    padding-bottom: 25px;
+    border-bottom: solid 2px gray;
+    position: absolute;
+    z-index: 1;
+    background-color: black
+  }
+
+  .backtotop {
+    font-size: 16px;
+    float: right;
+    padding-right: 20px;
+    padding-bottom: 10px;
+  }
